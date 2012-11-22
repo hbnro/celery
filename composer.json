@@ -1,0 +1,14 @@
+{
+  "name": "habanero/celery",
+  "description": "API wrappers for Twitter and Facebook SDK",
+  "authors": [{
+    "name":"Alvaro Cabrera"
+  }],
+  "require": {
+    "php": ">=5.3",
+    "facebook/php-sdk": "dev-master"
+  },
+  "autoload": {
+    "psr-0": {"Celery": "lib/"}
+  }
+}
