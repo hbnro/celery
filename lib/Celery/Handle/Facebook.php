@@ -31,7 +31,9 @@ class Facebook
     $method = preg_replace(array_keys($repl), $repl, $method);
 
     if (method_exists(static::$self, $method)) {
-      return call_user_func_array(array(static::$self, $method), $arguments);
+      try {
+        return call_user_func_array(array(static::$self, $method), $arguments);
+      } catch (\Exception $e) {}
     }
   }
 
