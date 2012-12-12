@@ -58,10 +58,12 @@ class Facebook
         static::$me = ! empty($_SESSION['__FBAUTH']) ? $_SESSION['__FBAUTH'] : array();
       }
 
-      if ( ! static::$me && static::get_user()) {
+      if (static::get_user()) {
         $_SESSION['__FBAUTH'] = static::$me = static::api('/me');
+        static::$connected = !! static::$me;
+      } else {
+        static::$connected = FALSE;
       }
-      static::$connected = !! static::$me;
     }
     return static::$connected;
   }
