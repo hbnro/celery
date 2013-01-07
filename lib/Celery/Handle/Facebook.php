@@ -38,6 +38,15 @@ class Facebook
   }
 
 
+  public static function connect()
+  {
+  }
+
+  public static function disconnect()
+  {
+    header('Location: ' . static::logout_url());
+  }
+
   public static function query($fql, $callback = '')
   {
     return static::api(array(
@@ -68,23 +77,15 @@ class Facebook
     return static::$connected;
   }
 
-  final public static function login_url()
+  public static function login_url()
   {
     extract(\Celery\Config::get('facebook'));
     return ! empty($connection) ? static::get_login_url($connection) : FALSE;
   }
 
-  public static function logout()
+  public static function logout_url(array $params = array())
   {
-    extract(\Celery\Config::get('facebook'));
-
-    foreach (array_keys($_SESSION) as $key) {
-      if (strpos($key, "fb_{$app_id}_") === 0) {
-        unset($_SESSION[$key]);
-      }
-    }
-
-    unset($_SESSION['__FBAUTH']);
+    return static::get_logout_url($params);
   }
 
   public static function me()

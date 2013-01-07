@@ -33,21 +33,24 @@ class Base
   {
     $set = static::handlers();
 
-    if ( ! empty($set[$provider]['enabled'])) {
-      $klass = $set[$provider]['class'];
-      $klass::logout();
-
-      return TRUE;
+    if (empty($set[$provider]['enabled'])) {
+      throw new \Exception("Unable disconnect from '$provider' provider");
     }
+
+    $klass = $set[$provider]['class'];
+    $klass::disconnect();
   }
 
-  public static function connect()
+  public static function connect($provider)
   {
     $set = static::handlers();
 
-    if ( ! empty($set[$provider]['enabled'])) {
-      var_dump($set[$provider]);
+    if (empty($set[$provider]['enabled'])) {
+      throw new \Exception("Unable use '$provider' provider to connect");
     }
+
+    $klass = $set[$provider]['class'];
+    $klass::connect();
   }
 
 }

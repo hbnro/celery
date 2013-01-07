@@ -43,6 +43,16 @@ class Twitter
   }
 
 
+
+  public static function connect()
+  {
+  }
+
+  public static function disconnect()
+  {
+    $_SESSION['__TWAUTH'] = NULL;
+  }
+
   public static function credentials()
   {
     if ( ! static::$data) {
@@ -106,11 +116,6 @@ class Twitter
     } else {
       throw new \Exception(strtr(key($test), '_', ' '));
     }
-  }
-
-  public static function logout()
-  {
-    $_SESSION['__TWAUTH'] = NULL;
   }
 
   public static function api_call($url, array $vars = array(), $method = 'GET')
