@@ -16,7 +16,11 @@ class Twitter
   private static $authorize_url = 'http://twitter.com/oauth/authorize';
   private static $api_url = 'http://api.twitter.com/1/';
 
-
+  private static $link_regex = array(// TODO: better unicode support?
+                    '/(\w{3,5}:\/\/([-\w\.]+)+(d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/' => '<a href="\\1">\\1</a>',
+                    '/(?<!\w)#([\wñáéíóú]+)(?=\b)/iu' => '<a href="http://twitter.com/search?q=%23\\1">#\\1</a>',
+                    '/(?<!\w)@(\w+)(?=\b)/u' => '<a href="http://twitter.com/\\1">@\\1</a>',
+                  );
 
   public static function __callStatic($method, $arguments)
   {
@@ -35,14 +39,11 @@ class Twitter
       $test && $arguments []= $test;
     }
 
-
     $extra = join('/', $arguments);
     $url   = $method . ($extra ? "/$extra" : '');
 
     return static::api_call($url, $data, $type);
   }
-
-
 
   public static function connect()
   {
@@ -55,9 +56,10 @@ class Twitter
 
   public static function credentials()
   {
-    if ( ! static::$data) {
+    if (! static::$data) {
       static::$data = static::api_call('account/verify_credentials');
     }
+
     return static::$data;
   }
 
@@ -93,7 +95,6 @@ class Twitter
           $test = ! empty($_SESSION['__TWAUTH']) ? $_SESSION['__TWAUTH'] : array();
         }
 
-
         if ( ! empty($test['oauth_token']) && ! empty($test['oauth_token'])) {
           \Celery\OAuth::set(static::$req, $test['oauth_token'], $test['oauth_token_secret']);
         }
@@ -104,6 +105,7 @@ class Twitter
         static::$connected = static::$user_id > 0;
       }
     }
+
     return static::$connected;
   }
 
@@ -134,16 +136,7 @@ class Twitter
 
   public static function linkify($text)
   {
-    static $set = array(// TODO: better unicode support?
-              '/(\w{3,5}:\/\/([-\w\.]+)+(d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/' => '<a href="\\1">\\1</a>',
-              '/(?<!\w)#([\wñáéíóú]+)(?=\b)/iu' => '<a href="http://twitter.com/search?q=%23\\1">#\\1</a>',
-              '/(?<!\w)@(\w+)(?=\b)/u' => '<a href="http://twitter.com/\\1">@\\1</a>',
-            );
-
-
-    $text = preg_replace(array_keys($set), $set, $text);
-
-    return $text;
+    return preg_replace(array_keys(static::$link_regex), static::$link_regex, $text);
   }
 
   public static function status_limit()

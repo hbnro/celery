@@ -10,8 +10,6 @@ class Base
                     'facebook' => '\\Celery\\Handle\\Facebook',
                   );
 
-
-
   public static function handlers()
   {
     $out = array();
@@ -26,6 +24,7 @@ class Base
         'url_for_login' => $enabled && ! $logged ? $klass::login_url() : '',
       );
     }
+
     return $out;
   }
 

@@ -62,7 +62,6 @@ class OAuth
     $headers  = array('Expect:');
     $resource = curl_init();
 
-
     switch ($method) {
       case 'POST'; // TODO: manage @uploads?
         ! empty($query) && curl_setopt($resource, CURLOPT_POSTFIELDS, trim($query, '='));
@@ -77,7 +76,6 @@ class OAuth
         $method <> 'GET' && curl_setopt($resource, CURLOPT_CUSTOMREQUEST, $method);
       break;
     }
-
 
     $tmp = 'Authorization: OAuth realm="' . $parts['scheme'] . '://' . $parts['host'] . $parts['path'] . '"';
 
@@ -119,6 +117,7 @@ class OAuth
       $hmac = pack('H*', $callback(($key ^ $lpad) . $test));
       $test = pack('H*', $callback(($key ^ $rpad) . $hmac));
     }
+
     return base64_encode($test);
   }
 
@@ -129,6 +128,7 @@ class OAuth
     } elseif (is_array($test)) {
       $test = array_map('static::encode', $test);
     }
+
     return $test;
   }
 

@@ -25,8 +25,6 @@ class Config
                     ),
                   );
 
-
-
   public static function set($key, $value = NULL)
   {
     if (isset(static::$bag[$key])) {

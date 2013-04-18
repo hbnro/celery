@@ -9,17 +9,14 @@ class Facebook
   private static $self = NULL;
   private static $connected = NULL;
 
-
+  private static $repl_regex = array(
+                    '/[^a-z0-9]|\s+/i' => ' ',
+                    '/\s([a-z])/ie' => 'ucfirst("\\1")',
+                  );
 
   public static function __callStatic($method, $arguments)
   {
-    static $repl = array(
-              '/[^a-z0-9]|\s+/i' => ' ',
-              '/\s([a-z])/ie' => 'ucfirst("\\1")',
-            );
-
-
-    if ( ! static::$self) {
+    if (! static::$self) {
       extract(\Celery\Config::get('facebook'));
 
       $instance['appId'] = $app_id;
@@ -28,7 +25,7 @@ class Facebook
       static::$self = new \Facebook($instance);
     }
 
-    $method = preg_replace(array_keys($repl), $repl, $method);
+    $method = preg_replace(array_keys(static::$repl_regex), static::$repl_regex, $method);
 
     if (method_exists(static::$self, $method)) {
       try {
@@ -36,7 +33,6 @@ class Facebook
       } catch (\Exception $e) {}
     }
   }
-
 
   public static function connect()
   {
@@ -74,12 +70,14 @@ class Facebook
         static::$connected = FALSE;
       }
     }
+
     return static::$connected;
   }
 
   public static function login_url()
   {
     extract(\Celery\Config::get('facebook'));
+
     return ! empty($connection) ? static::get_login_url($connection) : FALSE;
   }
 
