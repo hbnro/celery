@@ -11,10 +11,10 @@ class Twitter
   private static $user_id = -1;
   private static $data = array();
 
-  private static $request_token_url = 'http://twitter.com/oauth/request_token';
-  private static $access_token_url = 'http://twitter.com/oauth/access_token';
-  private static $authorize_url = 'http://twitter.com/oauth/authorize';
-  private static $api_url = 'http://api.twitter.com/1/';
+  private static $request_token_url = 'https://twitter.com/oauth/request_token';
+  private static $access_token_url = 'https://twitter.com/oauth/access_token';
+  private static $authorize_url = 'https://twitter.com/oauth/authenticate';
+  private static $api_url = 'https://api.twitter.com/1.1/';
 
   private static $link_regex = array(// TODO: better unicode support?
                     '/(\w{3,5}:\/\/([-\w\.]+)+(d+)?(\/([\w\/_\.]*(\?\S+)?)?)?)/' => '<a href="\\1">\\1</a>',
@@ -45,16 +45,12 @@ class Twitter
     return static::api_call($url, $data, $type);
   }
 
-  public static function connect()
+  public static function clear()
   {
+    unset($_SESSION['__TWAUTH']);
   }
 
-  public static function disconnect()
-  {
-    $_SESSION['__TWAUTH'] = NULL;
-  }
-
-  public static function credentials()
+  public static function data()
   {
     if (! static::$data) {
       static::$data = static::api_call('account/verify_credentials');
@@ -63,12 +59,7 @@ class Twitter
     return static::$data;
   }
 
-  public static function screen_name()
-  {
-    return static::$screen_name;
-  }
-
-  public static function user_id()
+  public static function uid()
   {
     return static::$user_id;
   }
@@ -83,11 +74,13 @@ class Twitter
       if ($token_key && $token_secret) {
         static::$connected = TRUE;
       } else {
-        if ( ! empty($_GET['oauth_token'])) {
-          $token = $_GET['oauth_token'];
-          \Celery\OAuth::set(static::$req, $token);
+        if ( ! empty($_GET['oauth_verifier'])) {
+          extract($_GET);
 
-          parse_str(\Celery\OAuth::exec(static::$req, static::$access_token_url), $test);
+          \Celery\OAuth::set(static::$req, $oauth_token);
+
+          parse_str(\Celery\OAuth::exec(static::$req, static::$access_token_url, compact('oauth_verifier')), $test);
+
           $_SESSION['__TWAUTH'] = $test;
 
           \Celery\OAuth::set(static::$req, $test['oauth_token'], $test['oauth_token_secret']);
@@ -113,11 +106,11 @@ class Twitter
   {
     parse_str(\Celery\OAuth::exec(static::$req, static::$request_token_url), $test);
 
-    if ( ! empty($test['oauth_token'])) {
-      return static::$authorize_url . '?oauth_token=' . $test['oauth_token'];
-    } else {
-      throw new \Exception(strtr(key($test), '_', ' '));
+    if ($test['oauth_callback_confirmed'] === 'true') {
+      return static::$authorize_url . "?oauth_token=$test[oauth_token]";
     }
+
+    throw new \Exception(strtr(key($test), '_', ' '));
   }
 
   public static function api_call($url, array $vars = array(), $method = 'GET')
