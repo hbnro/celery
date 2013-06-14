@@ -36,28 +36,13 @@ class Base
     return $out;
   }
 
-  public static function disconnect($provider)
+  public static function provider()
   {
-    $set = static::handlers();
-
-    if (empty($set[$provider]['enabled'])) {
-      throw new \Exception("Unable disconnect from '$provider' provider");
+    foreach (static::handlers() as $id => $one) {
+      if ($one['enabled'] && $one['connected']) {
+        return $id;
+      }
     }
-
-    $klass = $set[$provider]['class'];
-    $klass::disconnect();
-  }
-
-  public static function connect($provider)
-  {
-    $set = static::handlers();
-
-    if (empty($set[$provider]['enabled'])) {
-      throw new \Exception("Unable use '$provider' provider to connect");
-    }
-
-    $klass = $set[$provider]['class'];
-    $klass::connect();
   }
 
   public static function is_logged($on = FALSE)
