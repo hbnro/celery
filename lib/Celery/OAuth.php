@@ -48,8 +48,9 @@ class OAuth
     $host   = strtolower($parts['host']);
     $port   = ! empty($parts['port']) ? (int) $parts['port'] : 80;
     $url    = "$scheme://$host";
+    $set    = array('http' => 80, 'https' => 443);
 
-    ($port > 0) && (($scheme === 'http') && ($port !== 80)) OR (($scheme === 'https') && ($port !== 443)) && $out .= ":$port";
+    ! in_array($port, $set) && $url .= ":$port";
 
     $url .= $parts['path'];
 

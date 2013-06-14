@@ -10,6 +10,14 @@ class Base
                     'facebook' => '\\Celery\\Handle\\Facebook',
                   );
 
+  public static function __callStatic($method, $arguments)
+  {
+    @list($for) = $arguments;
+
+    return static::prompt($for, $method, TRUE, TRUE);
+  }
+
+
   public static function handlers()
   {
     $out = array();
@@ -50,6 +58,41 @@ class Base
 
     $klass = $set[$provider]['class'];
     $klass::connect();
+  }
+
+  public static function is_logged($on = FALSE)
+  {
+    return static::prompt($on, 'connected', TRUE);
+  }
+
+  public static function login_url($for = FALSE)
+  {
+    return static::prompt($for, 'url_for_login', TRUE);
+  }
+
+
+  private static function prompt($id, $key, $enabled = FALSE, $callback = FALSE)
+  {
+    $set = static::handlers();
+
+    if ( ! empty($set[$id][$key])) {
+      return $enabled && empty($set[$id]['enabled']) ? FALSE : ( ! empty($set[$id][$key]) ? $set[$id][$key] : FALSE);
+    }
+
+
+    foreach ($set as $provider => $one) {
+      if ($enabled) {
+        $klass = $one['class'];
+
+        if ( ! empty($one['enabled'])) {
+          return $callback ? $klass::$key() : ( ! empty($one[$key]) ? $one[$key] : FALSE);
+        }
+      } elseif ( ! empty($one[$key])) {
+        return $one[$key];
+      } elseif ($callback) {
+        return $klass::$key();
+      }
+    }
   }
 
 }
