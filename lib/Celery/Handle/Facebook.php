@@ -34,15 +34,6 @@ class Facebook
     }
   }
 
-  public static function connect()
-  {
-  }
-
-  public static function disconnect()
-  {
-    header('Location: ' . static::logout_url());
-  }
-
   public static function query($fql, $callback = '')
   {
     return static::api(array(
@@ -86,11 +77,21 @@ class Facebook
     return static::get_logout_url($params);
   }
 
-  public static function me()
+  public static function clear()
+  {
+    unset($_SESSION['__FBAUTH']);
+  }
+
+  public static function data()
   {
     if (static::is_logged()) {
       return static::$me;
     }
+  }
+
+  public static function uid()
+  {
+    return ! empty(static::$me['id']) ? (string) static::$me['id'] : FALSE;
   }
 
 }
